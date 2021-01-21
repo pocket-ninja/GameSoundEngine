@@ -99,7 +99,7 @@ open class RandomSoundSFX : PlayableSoundSFX {
     }
 }
 
-public extension SKAction {
+extension SKAction {
     
     /**
      

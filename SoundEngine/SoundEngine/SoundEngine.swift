@@ -16,12 +16,11 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-import Foundation
 import AVFoundation
+import Foundation
 
 /// A simple, easy to use sound engine designed for iOS games
 public class SoundEngine {
-    
     public static let shared = SoundEngine()
 
     private let engine = AVAudioEngine()
@@ -34,12 +33,12 @@ public class SoundEngine {
     private var pitchNodes = [AVAudioUnitTimePitch]()
     private var activePlayerIndex = 0
     
-    private var fadeOutDisplayLink : CADisplayLink?
+    private var fadeOutDisplayLink: CADisplayLink?
     private var fadeOutStartTime = 0.0
     private var fadeOutStartVolume = 1.0
     private let fadeOutLength = 1.5
     
-    private init() { }
+    private init() {}
     
     /// Volume control for background music. Valid values are 0.0 - 1.0
     public var backgroundMusicVolume: Float = 1.0 {
@@ -57,17 +56,16 @@ public class SoundEngine {
     
     /**
      
-       Configures the app's audio session and starts the sound engine. Should be called once,
-       early during app start up, typically in the AppDelegate didFinishLaunchingWithOptions
+        Configures the app's audio session and starts the sound engine. Should be called once,
+        early during app start up, typically in the AppDelegate didFinishLaunchingWithOptions
      
-       - Parameter numSFXPlayers: Specifies the number of sound effect players configured for playback. If your game needs to
-                                  play large numbers of sounds simultaneously you may need to increase this number. The sound
-                                  engine will let you know if numSFXPlayers needs to be increased by displaying the following
-                                  message in the console: "All sfx players are busy. Increase numSFXPlayers in startEngine call"
+        - Parameter numSFXPlayers: Specifies the number of sound effect players configured for playback. If your game needs to
+                                   play large numbers of sounds simultaneously you may need to increase this number. The sound
+                                   engine will let you know if numSFXPlayers needs to be increased by displaying the following
+                                   message in the console: "All sfx players are busy. Increase numSFXPlayers in startEngine call"
      
-    */
+     */
     public func startEngine(numSFXPlayers: Int = 20) {
-        
         if alreadyStarted { return }
         alreadyStarted = true
         
@@ -80,7 +78,7 @@ public class SoundEngine {
         engine.connect(sfxMixer, to: engine.mainMixerNode, format: nil)
         
         self.numSFXPlayers = numSFXPlayers
-        for _ in 0..<numSFXPlayers {
+        for _ in 0 ..< numSFXPlayers {
             let player = AVAudioPlayerNode()
             playerNodes.append(player)
             let pitch = AVAudioUnitTimePitch()
@@ -98,16 +96,15 @@ public class SoundEngine {
     
     /**
      
-       Plays background music. Only one background music file may be played at a time. If background music 
-       is already playing it will be stopped before the new music file is played.
+        Plays background music. Only one background music file may be played at a time. If background music
+        is already playing it will be stopped before the new music file is played.
      
-       Parameters:
-         - soundFile : The sound file name
-         - loop      : When true will loop the sound file until the music is stopped or another music file is played.
+        Parameters:
+          - soundFile : The sound file name
+          - loop      : When true will loop the sound file until the music is stopped or another music file is played.
     
-    */
+     */
     public func playBackgroundMusic(_ soundFile: String, loop: Bool = true) {
-        
         if !alreadyStarted {
             startEngine()
         }
@@ -141,12 +138,11 @@ public class SoundEngine {
      
      Parameters:
      - soundFiles : Array of sound file names
-     - loop       : When true will loop playing sound files until the music is stopped or another music file is played. 
+     - loop       : When true will loop playing sound files until the music is stopped or another music file is played.
                     Each loop will play a random file from the soundFiles array.
      
      */
     public func playRandomBackgroundMusic(_ soundFiles: [String], loop: Bool = true) {
-        
         if !alreadyStarted {
             startEngine()
         }
@@ -176,14 +172,13 @@ public class SoundEngine {
 
     /**
      
-       Stops the background music.
+        Stops the background music.
      
-       Parameter fadeOut: When true will do a short fadeout of the music before stopping it completely.
-                          If false the music will stop immediately.
+        Parameter fadeOut: When true will do a short fadeout of the music before stopping it completely.
+                           If false the music will stop immediately.
      
-    */
+     */
     public func stopBackgroundMusic(fadeOut: Bool = true) {
-        
         if backgroundMusicPlayer.isPlaying {
             if fadeOut {
                 startFadeOut()
@@ -193,73 +188,65 @@ public class SoundEngine {
         }
     }
 
-    
     private func configureAudioSession() {
-        
         do {
-            try AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryAmbient)
-        } catch {
-            
-        }
+            try AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.ambient)
+        } catch {}
         
         let nc = NotificationCenter.default
-        nc.addObserver(forName:NSNotification.Name.AVAudioSessionSilenceSecondaryAudioHint,
-                       object:nil,
-                       queue:nil,
-                       using:catchAudioHintNotification)
+        nc.addObserver(forName: AVAudioSession.silenceSecondaryAudioHintNotification,
+                       object: nil,
+                       queue: nil,
+                       using: catchAudioHintNotification)
         
-        nc.addObserver(forName:NSNotification.Name.AVAudioSessionInterruption,
-                       object:nil,
-                       queue:nil,
-                       using:catchAudioSessionInterruptionNotification)
+        nc.addObserver(forName: AVAudioSession.interruptionNotification,
+                       object: nil,
+                       queue: nil,
+                       using: catchAudioSessionInterruptionNotification)
         
-        nc.addObserver(forName:NSNotification.Name.UIApplicationDidBecomeActive,
-                       object:nil,
-                       queue:nil,
-                       using:catchDidBecomeActiveNotification)
+        nc.addObserver(forName: UIApplication.didBecomeActiveNotification,
+                       object: nil,
+                       queue: nil,
+                       using: catchDidBecomeActiveNotification)
     }
     
-    private func catchAudioHintNotification(notification:Notification) -> Void {
-        
+    private func catchAudioHintNotification(notification: Notification) {
         guard let userInfo = notification.userInfo,
-            let audioHintType  = userInfo[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? UInt,
-            let audioHint = AVAudioSessionSilenceSecondaryAudioHintType(rawValue:audioHintType)
-            else { return }
+            let audioHintType = userInfo[AVAudioSessionSilenceSecondaryAudioHintTypeKey] as? UInt,
+            let audioHint = AVAudioSession.SilenceSecondaryAudioHintType(rawValue: audioHintType)
+        else { return }
         
         switch audioHint {
         case .begin:
             backgroundMusicPlayer.volume = 0.0
-            break
         case .end:
             backgroundMusicPlayer.volume = backgroundMusicVolume
-            break
+        @unknown default:
+            return
         }
     }
     
-    private func catchAudioSessionInterruptionNotification(notification:Notification) -> Void {
-        
+    private func catchAudioSessionInterruptionNotification(notification: Notification) {
         guard let userInfo = notification.userInfo,
-            let interruptionType  = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
-            let interruption = AVAudioSessionInterruptionType(rawValue:interruptionType)
-            else { return }
+            let interruptionType = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,
+            let interruption = AVAudioSession.InterruptionType(rawValue: interruptionType)
+        else { return }
         
         switch interruption {
         case .began:
             engine.pause()
-            break
         case .ended:
             restartEngine()
-            break
+        @unknown default:
+            return
         }
     }
     
-    private func catchDidBecomeActiveNotification(notification:Notification) -> Void {
-        
+    private func catchDidBecomeActiveNotification(notification: Notification) {
         restartEngine()
     }
     
     private func restartEngine() {
-        
         if !engine.isRunning {
             do {
                 try engine.start()
@@ -276,24 +263,27 @@ public class SoundEngine {
     }
     
     internal func loadSound(soundFile: String,
-                   volume: Float,
-                   volumeVary: Float? = nil,
-                   pitchVary: Float? = nil,
-                   completionHandler: @escaping ((() -> Void)?) -> Void)
+                            volume: Float,
+                            volumeVary: Float? = nil,
+                            pitchVary: Float? = nil,
+                            completionHandler: @escaping ((() -> Void)?) -> Void)
     {
-        var playClosure : (() -> Void)? = nil
+        var playClosure: (() -> Void)?
         
         if !alreadyStarted {
             startEngine()
         }
         
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            
             if let path = Bundle.main.path(forResource: soundFile, ofType: nil) {
                 let fileURL = NSURL.fileURL(withPath: path)
                 
                 if let file = try? AVAudioFile(forReading: fileURL) {
-                    let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length))
+                    guard let buffer = AVAudioPCMBuffer(pcmFormat: file.processingFormat, frameCapacity: AVAudioFrameCount(file.length)) else {
+                      completionHandler(nil)
+                        return
+                    }
+                    
                     do {
                         try file.read(into: buffer)
                     } catch _ {
@@ -301,11 +291,11 @@ public class SoundEngine {
                         return
                     }
                     
-                    var maxVolume : Float?
-                    var minVolume : Float?
+                    var maxVolume: Float?
+                    var minVolume: Float?
                     if let db = volumeVary {
-                        maxVolume = round(1000000000.0 * pow(10.0, db/20.0)) / 1000000000.0
-                        minVolume = round(1000000000.0 * pow(10.0, -db/20.0)) / 1000000000.0
+                        maxVolume = round(1000000000.0 * pow(10.0, db / 20.0)) / 1000000000.0
+                        minVolume = round(1000000000.0 * pow(10.0, -db / 20.0)) / 1000000000.0
                     }
                     
                     playClosure = { [weak self] in
@@ -326,8 +316,8 @@ public class SoundEngine {
     
     private func playBufferOnNextAvailablePlayer(buffer: AVAudioPCMBuffer,
                                                  volume: Float,
-                                                 minVolume : Float?,
-                                                 maxVolume : Float?,
+                                                 minVolume: Float?,
+                                                 maxVolume: Float?,
                                                  pitchVary: Float?)
     {
         var numPlayersChecked = 0
@@ -367,7 +357,7 @@ public class SoundEngine {
             pitch.bypass = true
         }
         
-        player.scheduleBuffer(buffer, completionHandler:{
+        player.scheduleBuffer(buffer, completionHandler: {
             DispatchQueue.main.async {
                 player.stop()
             }
@@ -376,14 +366,12 @@ public class SoundEngine {
     }
     
     private func loopBackgroundMusic(file: AVAudioFile) {
-        
         backgroundMusicPlayer.scheduleFile(file, at: nil, completionHandler: { [weak self] in
             self?.loopBackgroundMusic(file: file)
         })
     }
     
     private func loopRandomBackgroundMusic(file: AVAudioFile, soundFiles: [String]) {
-        
         backgroundMusicPlayer.scheduleFile(file, at: nil, completionHandler: { [weak self] in
             let soundFile = soundFiles[Int.random(soundFiles.count)]
             if let path = Bundle.main.path(forResource: soundFile, ofType: nil) {
@@ -396,18 +384,16 @@ public class SoundEngine {
     }
     
     private func startFadeOut() {
-        
         stopFadeOut()
         
         fadeOutStartTime = CACurrentMediaTime()
         fadeOutStartVolume = Double(backgroundMusicPlayer.volume)
         
         fadeOutDisplayLink = CADisplayLink(target: self, selector: #selector(displayLinkDidFire))
-        fadeOutDisplayLink?.add(to: RunLoop.main, forMode: RunLoopMode.defaultRunLoopMode)
+        fadeOutDisplayLink?.add(to: RunLoop.main, forMode: RunLoop.Mode.default)
     }
     
     @objc private func displayLinkDidFire() {
-        
         let elapsed = CACurrentMediaTime() - fadeOutStartTime
         
         if elapsed >= fadeOutLength {
@@ -421,7 +407,6 @@ public class SoundEngine {
     }
     
     private func stopFadeOut() {
-        
         fadeOutDisplayLink?.invalidate()
         fadeOutDisplayLink = nil
     }
